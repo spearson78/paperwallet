@@ -20,6 +20,8 @@ const paniccode PANIC_INT_MOD_ALIAS=10;
 const paniccode PANIC_RMD160_SUM_NXNOTZERO=11;
 const paniccode PANIC_BITADDRESS_PK_NOTONCURVE=12;
 const paniccode PANIC_NAT_BYTES_OVERFLOW=13;
+const paniccode PANIC_RNG_REGULAR=14;
+const paniccode PANIC_RNG_RUN=15;
 
 void PANIC(paniccode p);
 
