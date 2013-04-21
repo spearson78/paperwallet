@@ -52,9 +52,8 @@ void bignat::Set(const struct bignat &b){
 }
 
 void bignat::Set(WORD word) {
-  this->make(1);
-  this->data[0]=word;
-  this->norm();
+    this->make(1);
+    this->data[0]=word;
 }
 
 WORD bignat::subWW(WORD *z0,WORD x,WORD y,WORD c){
