@@ -7,6 +7,16 @@
 typedef unsigned char paniccode;
 
 const paniccode PANIC_UNKNOWN_ERROR=0;
+const paniccode PANIC_NAT_MAKE_OVERFLOW=1;
+const paniccode PANIC_NAT_SUB_UNDERFLOW=2;
+const paniccode PANIC_NAT_SUB_CNONZERO=3;
+const paniccode PANIC_NAT_TOWORD_OVERFLOW=4;
+const paniccode PANIC_NAT_DIVZERO=5;
+const paniccode PANIC_NAT_TOSTRING_OVERFLOW=6;
+const paniccode PANIC_NAT_MUL_ALIAS=7;
+const paniccode PANIC_NAT_DIV_ALIAS=8;
+const paniccode PANIC_NAT_DIV_SHIFTOFF=9;
+const paniccode PANIC_NAT_BYTES_OVERFLOW=13;
 
 void PANIC(paniccode p);
 
