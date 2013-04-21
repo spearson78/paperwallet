@@ -39,11 +39,16 @@ inline void bignat::norm(){
 }
 
 void bignat::Set(const struct bignat &b){
-  //TODO: I may be able to avoid this aliasing check
+#ifdef ALIASCHECKS
   if( this!=&b ){
+#endif
     this->make(b.len);
     memcpy(this->data,b.data,b.len * sizeof(WORD));
+#ifdef ALIASCHECKS
+  } else {
+    PANIC(PANIC_NAT_SET_ALIAS);
   }
+#endif
 }
 
 void bignat::Set(WORD word) {
