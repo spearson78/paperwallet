@@ -11,12 +11,12 @@
 typedef unsigned char WORD;
 
 struct bignat {
-  private:
+  public:
     WORD *data;
     int cap;
     int len;
 
-  private:
+  public:
     void make(int n);
     void norm();
 
@@ -72,6 +72,7 @@ struct bignat {
     void Bytes(uint8_t *out,int limit) const;
 
     friend class bigint;
+    friend class bitcurve;
 };
 
 #endif

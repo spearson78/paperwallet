@@ -10,7 +10,7 @@
 #include <Arduino.h>
 
 struct bigint{
-  private:
+  public:
     struct bignat _abs;
     byte neg;
 

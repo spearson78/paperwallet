@@ -18,6 +18,7 @@ const paniccode PANIC_NAT_DIV_ALIAS=8;
 const paniccode PANIC_NAT_DIV_SHIFTOFF=9;
 const paniccode PANIC_INT_MOD_ALIAS=10;
 const paniccode PANIC_RMD160_SUM_NXNOTZERO=11;
+const paniccode PANIC_BITADDRESS_PK_NOTONCURVE=12;
 const paniccode PANIC_NAT_BYTES_OVERFLOW=13;
 
 void PANIC(paniccode p);

@@ -389,8 +389,8 @@ void bitcurve::ScalarMult(const struct bigint &Bx,const struct bigint &By,const 
   }
   
   if(!seenFirstTrue){
-    x.Abs.make(0);
-    y.Abs.make(0);
+    x._abs.make(0);
+    y._abs.make(0);
     return;
   }
   
