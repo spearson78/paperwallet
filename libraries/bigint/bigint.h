@@ -39,6 +39,7 @@ struct bigint{
     int Sign() const;
     void String(WORD base,const char *map,char *out,int limit) const;
 
+    friend class bitcurve;
 };
 
 #endif
