@@ -1,6 +1,10 @@
 #include <lcd5510.h>
 //This code is derived from http://playground.arduino.cc/Code/PCD8544
 
+// Modifications are Copyright 2013 Steven Pearson
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
+
 //#define PIN_SCE   A1
 #define PIN_RESET A2
 #define PIN_DC    A3
