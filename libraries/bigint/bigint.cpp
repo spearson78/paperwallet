@@ -7,7 +7,7 @@
 #include <bigint.h>
 #include <panic.h>
 
-#define ALIASCHECKS
+//#define ALIASCHECKS
 
 bigint::bigint(WORD *data,int cap) : _abs(data,cap),neg(0) {
 }
@@ -21,7 +21,6 @@ void bigint::SetBytes(byte neg,const uint8_t *data,int len){
   this->neg=neg;
   this->_abs.SetBytes(data,len);
 }
-
 
 void bigint::Set(const struct bigint &x){
   this->neg=x.neg;
