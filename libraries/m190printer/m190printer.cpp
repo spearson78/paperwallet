@@ -5,6 +5,8 @@
 #include <m190printer.h>
 #include <avr/pgmspace.h>
 
+//#define RECORD_TICKS
+
 static const byte ASCII[] PROGMEM =
 {
  0x00, 0x00, 0x00, 0x00, 0x00 // 20  
@@ -105,12 +107,20 @@ static const byte ASCII[] PROGMEM =
 ,0x78, 0x46, 0x41, 0x46, 0x78 // 7f →
 };
 
+#ifdef RECORD_TICKS
+void recordTick(int val,unsigned long micros);
+#endif
+
 boolean isTick(){
-  static int flipflop=0;
+  static byte flipflop=0;
   static int lastval=0;
 
   int val=analogRead(m190::PIN_TIMING);
-  
+
+#ifdef RECORD_TICKS
+  recordTick(val,micros());
+#endif   
+
   boolean tickfound=false;
   
   if(flipflop==0){
@@ -121,7 +131,6 @@ boolean isTick(){
   } else {
     if( val > lastval ){
       flipflop=0;
-      tickfound=true;
     }
   }
   
@@ -131,26 +140,19 @@ boolean isTick(){
 }
 
 boolean isReset(){
-  static int armed=0;
-  static unsigned long armedTime=0;
+  static byte armed=0;
 
   int val = digitalRead(m190::PIN_RESET);
-  unsigned long now=micros();
 
   if( val == HIGH ){
-    switch( armed ){
+    switch(armed){
       case 0:
-        armedTime=now;
         armed=1;
         break;
       case 1:
-        if(now-armedTime >= 54ul ){
-          armed=2;
-          return true;
-        }
-        break;
+        armed=2;
+        return true;
       case 2:
-        //We already fired
         break;
     }
   }
@@ -178,72 +180,76 @@ boolean formfeedsource(void *ctx,int x,int y){
   return 0;
 }
 
+void solenoidsoff(){
+  digitalWrite(m190::PIN_SOLA,LOW);
+  digitalWrite(m190::PIN_SOLB,LOW);
+  digitalWrite(m190::PIN_SOLC,LOW);
+  digitalWrite(m190::PIN_SOLD,LOW);
+  digitalWrite(m190::PIN_SOLD,LOW);
+  digitalWrite(m190::PIN_SOLE,LOW);
+  digitalWrite(m190::PIN_SOLF,LOW);
+  digitalWrite(m190::PIN_SOLG,LOW);
+  digitalWrite(m190::PIN_SOLH,LOW);
+}
+
 void m190::print(pixelsource source,void *ctx,int rows,boolean overlap){
 
+  solenoidsoff();
   digitalWrite(PIN_MOTOR,HIGH);
-  //TODO: validate we get 90 ticks
-  int spinup=2;
-  while(spinup>0){
-    if( isReset() ){
-      spinup--;
-    }    
-  }
-  
+ 
   int firsttick=3;
   int maxticks=overlap?60:54;
   
-  int y=0;
+  //spin up
+  int y=-2;
   int ticks=0;
   while(y<rows){
-    if( isTick() ){
-      ticks++;
-    }
     if( isReset() ){
       ticks=0;
       y++;
     }
 
+    //Spin up
+    if(y<0){
+      continue;
+    }
+
+    //TODO: validate we get 90 ticks
+
+    if (!isTick()){
+      continue;
+    }
+    ticks++;
+
+    solenoidsoff();
     //We are in the printing range
     if( ticks >=firsttick && ticks <=maxticks ){
       int pos = ticks-firsttick;
       int x=pos/3;
       int solgroup = pos%3;
-
+  
       //Only power 3 solenoids max at a time
-      digitalWrite(PIN_SOLA,solgroup==0&&source(ctx,x,y));
-      digitalWrite(PIN_SOLB,solgroup==1&&source(ctx,x+18,y));
-      digitalWrite(PIN_SOLC,solgroup==2&&source(ctx,x+36,y));
-
-      digitalWrite(PIN_SOLD,solgroup==0&&source(ctx,x+54,y));
-      digitalWrite(PIN_SOLE,solgroup==1&&source(ctx,x+72,y));
-      digitalWrite(PIN_SOLF,solgroup==2&&source(ctx,x+90,y));
-
-      digitalWrite(PIN_SOLG,solgroup==1&&source(ctx,x+108,y));
-      digitalWrite(PIN_SOLH,solgroup==2&&source(ctx,x+126,y));
-      
-    } else {
-      digitalWrite(PIN_SOLA,LOW);
-      digitalWrite(PIN_SOLB,LOW);
-      digitalWrite(PIN_SOLC,LOW);
-      digitalWrite(PIN_SOLD,LOW);
-      digitalWrite(PIN_SOLD,LOW);
-      digitalWrite(PIN_SOLE,LOW);
-      digitalWrite(PIN_SOLF,LOW);
-      digitalWrite(PIN_SOLG,LOW);
-      digitalWrite(PIN_SOLH,LOW);      
+      switch(solgroup){
+        case 0:
+          digitalWrite(PIN_SOLH,source(ctx,x+126,y));
+          digitalWrite(PIN_SOLD,source(ctx,x+54,y));
+          break;
+        case 1:
+          digitalWrite(PIN_SOLB,source(ctx,x+18,y));
+          digitalWrite(PIN_SOLE,source(ctx,x+72,y));
+          digitalWrite(PIN_SOLG,source(ctx,x+108,y));
+          break;
+        case 2:
+          digitalWrite(PIN_SOLA,source(ctx,x,y));
+          digitalWrite(PIN_SOLC,source(ctx,x+36,y));
+          digitalWrite(PIN_SOLF,source(ctx,x+90,y));
+          break;
+      }      
     }
   }
 
   //Turn off all solenoids
-  digitalWrite(PIN_SOLA,LOW);
-  digitalWrite(PIN_SOLB,LOW);
-  digitalWrite(PIN_SOLC,LOW);
-  digitalWrite(PIN_SOLD,LOW);
-  digitalWrite(PIN_SOLD,LOW);
-  digitalWrite(PIN_SOLE,LOW);
-  digitalWrite(PIN_SOLF,LOW);
-  digitalWrite(PIN_SOLG,LOW);
-  digitalWrite(PIN_SOLH,LOW);
+  solenoidsoff();
   //stop the motor
   digitalWrite(PIN_MOTOR,LOW);
 }
