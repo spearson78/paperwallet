@@ -164,16 +164,12 @@ boolean isReset(){
 }
 
 void m190::initialize(){
+  
+  DDRD = B11111111;
+  PORTD = 0;
+
   pinMode(PIN_MOTOR,OUTPUT);
   pinMode(PIN_RESET,INPUT);
-  pinMode(PIN_SOLA,OUTPUT);
-  pinMode(PIN_SOLB,OUTPUT);
-  pinMode(PIN_SOLC,OUTPUT);
-  pinMode(PIN_SOLD,OUTPUT);
-  pinMode(PIN_SOLE,OUTPUT);
-  pinMode(PIN_SOLF,OUTPUT);
-  pinMode(PIN_SOLG,OUTPUT);
-  pinMode(PIN_SOLH,OUTPUT);
 }
 
 boolean formfeedsource(void *ctx,int x,int y){
@@ -181,15 +177,7 @@ boolean formfeedsource(void *ctx,int x,int y){
 }
 
 void solenoidsoff(){
-  digitalWrite(m190::PIN_SOLA,LOW);
-  digitalWrite(m190::PIN_SOLB,LOW);
-  digitalWrite(m190::PIN_SOLC,LOW);
-  digitalWrite(m190::PIN_SOLD,LOW);
-  digitalWrite(m190::PIN_SOLD,LOW);
-  digitalWrite(m190::PIN_SOLE,LOW);
-  digitalWrite(m190::PIN_SOLF,LOW);
-  digitalWrite(m190::PIN_SOLG,LOW);
-  digitalWrite(m190::PIN_SOLH,LOW);
+  PORTD=0;
 }
 
 void m190::print(pixelsource source,void *ctx,int rows,boolean overlap){
@@ -231,18 +219,18 @@ void m190::print(pixelsource source,void *ctx,int rows,boolean overlap){
       //Only power 3 solenoids max at a time
       switch(solgroup){
         case 0:
-          digitalWrite(PIN_SOLH,source(ctx,x+126,y));
-          digitalWrite(PIN_SOLD,source(ctx,x+54,y));
+          if(source(ctx,x+126,y)){PORTD|=1<<1;} //H
+          if(source(ctx,x+54,y)){PORTD|=1<<5;} //D
           break;
         case 1:
-          digitalWrite(PIN_SOLB,source(ctx,x+18,y));
-          digitalWrite(PIN_SOLE,source(ctx,x+72,y));
-          digitalWrite(PIN_SOLG,source(ctx,x+108,y));
+          if(source(ctx,x+18,y)){PORTD|=1<<7;} //B
+          if(source(ctx,x+72,y)){PORTD|=1<<4;} //E
+          if(source(ctx,x+108,y)){PORTD|=1<<2;} //G
           break;
         case 2:
-          digitalWrite(PIN_SOLA,source(ctx,x,y));
-          digitalWrite(PIN_SOLC,source(ctx,x+36,y));
-          digitalWrite(PIN_SOLF,source(ctx,x+90,y));
+          if(source(ctx,x,y)){PORTD|=1;} //A
+          if(source(ctx,x+36,y)){PORTD|=1<<6;} //C
+          if(source(ctx,x+90,y)){PORTD|=1<<3;} //F
           break;
       }      
     }

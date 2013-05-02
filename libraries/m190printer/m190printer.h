@@ -7,18 +7,9 @@
 #include <Arduino.h>
 
 namespace m190{
-  const int PIN_MOTOR = 4;
-  const int PIN_RESET = 2;
-  const int PIN_TIMING = A0;
-
-  const int PIN_SOLA = 5;
-  const int PIN_SOLB = 6;
-  const int PIN_SOLC = 7;
-  const int PIN_SOLD = 8;
-  const int PIN_SOLE = 9;
-  const int PIN_SOLF = 10;
-  const int PIN_SOLG = 11;
-  const int PIN_SOLH = 12;
+  const int PIN_MOTOR = 8;
+  const int PIN_RESET = 9;
+  const int PIN_TIMING = A1;
 
   typedef boolean (*pixelsource)(void *ctx,int x,int y);
 
