@@ -7,12 +7,17 @@
 #include <panic.h>
 #include <progress.h>
 
+#define RNG_VERIFY
+#define ONE_BIT_SAMPLE //pcl3 and display prototype barelyfits in flash
+
 byte getSample(){
   int a = analogRead(0);
+#ifdef ONE_BIT_SAMPLE
+  return a &0x01;
+#else
   return (a ^ (a>>1) ^ (a>>2) ^ (a>>3) ^ (a>>4) ^ (a>>5) ^ (a>>6) ^ (a>>7))&0x01;
+#endif
 }
-
-#define RNG_VERIFY
 
 const int rounds = 50;
 
@@ -31,9 +36,9 @@ void rng::generate(byte *data,int dataLen){
     PROGRESS((float)r/(float)rounds);
     for( int i = 0; i < dataLen ; i++ ){
       byte build =0;
-      for(int bit=0;bit<8;bit++){
-        int s = getSample();
-        build |= (s << bit);
+      for(byte bit=0;bit<8;bit++){
+        byte s = getSample();
+        build |= (s<<bit);
 #ifdef RNG_VERIFY
         if(s==last){
           run++;
