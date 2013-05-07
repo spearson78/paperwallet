@@ -250,12 +250,14 @@ static const byte ARD[] PROGMEM =
 0x78,0x00,0x7c,0x3e,0xe0,0xe3,0x1f,0x00,0xc0,0x1f,0x80,0xff,0x3f,0x3c,0xc0,0x07,0xf0,0x03
 };
 
+const int BUTTONPIN=11;
+
 void setup(){
   m190::initialize();
 
   //Don't print until button is pressed
-  pinMode(3,INPUT);
-  while(digitalRead(3)==LOW){
+  pinMode(BUTTONPIN,INPUT);
+  while(digitalRead(BUTTONPIN)==LOW){
   }
 
   m190::formfeed(30);

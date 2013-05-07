@@ -7,9 +7,9 @@
 #include <Arduino.h>
 
 namespace m190{
-  const int PIN_MOTOR = 8;
-  const int PIN_RESET = 9;
-  const int PIN_TIMING = A1;
+  const int PIN_MOTOR = 9; //PWM required
+  const int PIN_RESET = 10;
+  const int PIN_TIMING = A5;
 
   typedef boolean (*pixelsource)(void *ctx,int x,int y);
 
