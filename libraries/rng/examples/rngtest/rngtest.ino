@@ -1,7 +1,7 @@
 #include <sha256.h>
 #include <rng.h>
 #include <panic.h>
-#include <progres.h>
+#include <progress.h>
 
 void PROGRESS(float p){
 }
