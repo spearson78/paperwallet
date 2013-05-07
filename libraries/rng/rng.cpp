@@ -9,7 +9,7 @@
 
 byte getSample(){
   int a = analogRead(0);
-  return a & 0x01;
+  return (a ^ (a>>1) ^ (a>>2) ^ (a>>3) ^ (a>>4) ^ (a>>5) ^ (a>>6) ^ (a>>7))&0x01;
 }
 
 #define RNG_VERIFY
