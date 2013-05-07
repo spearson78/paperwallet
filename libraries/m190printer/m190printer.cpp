@@ -180,26 +180,48 @@ void solenoidsoff(){
   PORTD=0;
 }
 
+int calcPortVal(m190::pixelsource source,void *ctx,int x,int y,int solgroup){
+  int ret=0;
+  //Only power 3 solenoids max at a time
+  switch(solgroup){
+    case 0:
+      if(source(ctx,x+126,y)){ret|=1<<1;} //H
+      if(source(ctx,x+54,y)){ret|=1<<5;} //D
+      break;
+    case 1:
+      if(source(ctx,x+18,y)){ret|=1<<7;} //B
+      if(source(ctx,x+72,y)){ret|=1<<4;} //E
+      if(source(ctx,x+108,y)){ret|=1<<2;} //G
+      break;
+    case 2:
+      if(source(ctx,x,y)){ret|=1;} //A
+      if(source(ctx,x+36,y)){ret|=1<<6;} //C
+      if(source(ctx,x+90,y)){ret|=1<<3;} //F
+      break;
+  }
+
+  return ret;        
+}
+
 void m190::print(pixelsource source,void *ctx,int rows,boolean overlap){
 
   solenoidsoff();
   digitalWrite(PIN_MOTOR,HIGH);
+  //analogWrite(PIN_MOTOR,200);
  
   int firsttick=3;
   int maxticks=overlap?60:54;
-  
+
   //spin up
   int y=-2;
   int ticks=0;
+  int fire=0;
   while(y<rows){
     if( isReset() ){
       ticks=0;
       y++;
-    }
-
-    //Spin up
-    if(y<0){
-      continue;
+      //calc first byte for this new row
+      fire=calcPortVal(source,ctx,0,y,0);
     }
 
     //TODO: validate we get 90 ticks
@@ -209,30 +231,17 @@ void m190::print(pixelsource source,void *ctx,int rows,boolean overlap){
     }
     ticks++;
 
-    solenoidsoff();
     //We are in the printing range
-    if( ticks >=firsttick && ticks <=maxticks ){
-      int pos = ticks-firsttick;
+    if( y>=0 && ticks >=firsttick && ticks <=maxticks ){
+      PORTD=fire;
+
+      int pos = (ticks-firsttick)+1;
       int x=pos/3;
       int solgroup = pos%3;
   
-      //Only power 3 solenoids max at a time
-      switch(solgroup){
-        case 0:
-          if(source(ctx,x+126,y)){PORTD|=1<<1;} //H
-          if(source(ctx,x+54,y)){PORTD|=1<<5;} //D
-          break;
-        case 1:
-          if(source(ctx,x+18,y)){PORTD|=1<<7;} //B
-          if(source(ctx,x+72,y)){PORTD|=1<<4;} //E
-          if(source(ctx,x+108,y)){PORTD|=1<<2;} //G
-          break;
-        case 2:
-          if(source(ctx,x,y)){PORTD|=1;} //A
-          if(source(ctx,x+36,y)){PORTD|=1<<6;} //C
-          if(source(ctx,x+90,y)){PORTD|=1<<3;} //F
-          break;
-      }      
+      fire=calcPortVal(source,ctx,x,y,solgroup);
+    } else {
+      solenoidsoff();
     }
   }
 
