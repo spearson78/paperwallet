@@ -3,7 +3,7 @@ paperwallet
 
 Arduino Based Bitcoin Paper Wallet Printer
 
-Demo at http://http://www.youtube.com/watch?v=noW77GqmNBQ
+Demo at http://www.youtube.com/watch?v=noW77GqmNBQ
 
 The sketch compiles is larger than 32,256 bytes so you'll need to either burn it using a programmer (don't forget to disable bootloader on reset)
 
