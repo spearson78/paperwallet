@@ -16,7 +16,7 @@ const int BUTTONPIN=11;
 
 void PANIC(byte errorCode){
   for(;;){
-    for(int i=0;i<(errorCode+1);i++){
+    for(byte i=0;i<errorCode;i++){
       digitalWrite(LEDPIN,HIGH);
       delay(250);
       digitalWrite(LEDPIN,LOW);
