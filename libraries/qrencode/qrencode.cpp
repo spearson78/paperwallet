@@ -247,7 +247,7 @@ inline void copyframebasetoqrframe(unsigned char *qrframe){
   //memcpy_P(qrframe, framebase, WDB * WD);
   
   //This saves 100 bytes
-  int y;
+  unsigned char y;
   
   memset(qrframe,0,WDB*WD);
   
