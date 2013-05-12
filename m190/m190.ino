@@ -28,13 +28,8 @@ void PANIC(byte errorCode){
 
 void PROGRESS(float progress){
   static byte flipflop=0;
-  if(flipflop==0){
-    digitalWrite(LEDPIN,HIGH);
-    flipflop=1;
-  }else {
-    digitalWrite(LEDPIN,LOW);
-    flipflop=0;
-  }
+  flipflop++;
+  digitalWrite(LEDPIN,flipflop%2);
 }
 
 uint8_t PRIVATE[32];
@@ -42,36 +37,6 @@ WORD xbuf[32];
 WORD ybuf[32];
 struct bigint pubx(xbuf,sizeof(xbuf));
 struct bigint puby(ybuf,sizeof(ybuf));
-
-/*
-const int ringsize=128;
-int ring[ringsize];
-int ringpos=0;
-void recordTick(int val,unsigned long micros){
-  ring[ringpos]=val;
-  ringpos++;
-  ringpos%=ringsize;
-}
-*/
-
-void dumpStats(){
-/*
-  Serial.println("Ring Buf");
-  int last=0;
-  for(int i=0;i<ringsize;i++){
-    int p=i+ringpos;
-    p%=ringsize;
-    int val = ring[p];
-    Serial.print(val);
-    if( val >= last ){
-      Serial.println(" >");
-    } else {
-      Serial.println(" <");
-    }
-    last=val;
-  }
-  */
-}
 
 const float qrxscale=2.25;
 const int qryscale=2;
@@ -83,7 +48,6 @@ const int qryscale=2;
 //const float qrxscale=3.375;
 
 boolean qrcodesource(void *ctx,int x,int y){
-//  return( x==10 || y==10);
   qrcontext *qr=(qrcontext *)ctx;
 
   float fx = (float)x/qrxscale;
