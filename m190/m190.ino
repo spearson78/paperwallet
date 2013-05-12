@@ -135,29 +135,19 @@ void printprivate(uint8_t *PRIVATE){
   printqr(encoded);
   m190::formfeed(5);
   m190::print(encoded);
-  /*  
-  m190::print(encoded);
-  qrcontext qr;
-  qr.qrencode(encoded);
-  m190::print(qrcodesource,NULL,WD*qryscale,true);
-  m190::formfeed(2);
-  */
 }
 
 void printpublic(const struct bigint &x,const struct bigint &y){
   char encoded[40];
   bitaddress::generateAddress(x,y,encoded,sizeof(encoded)); 
-  //qrcontext qr;
-  //qr.qrencode(encoded);
   
   m190::print(encoded);
-  m190::formfeed(5);  
+  m190::formfeed(5);
   printqr(encoded);
-  //qrcode(qr);
 }
 
 void generatePrivateKey(uint8_t *PRIVATE){
-  rng::generate(PRIVATE,32);
+  rng::generate(PRIVATE);
 }
 
 void setup(){
@@ -165,9 +155,6 @@ void setup(){
 
   pinMode(BUTTONPIN,INPUT);
   pinMode(LEDPIN,OUTPUT);
-  
-
-  //dumpStats();
 }
 
 
@@ -175,26 +162,18 @@ void loop(){
   digitalWrite(LEDPIN,HIGH);  
   while(digitalRead(BUTTONPIN)==LOW){
   }
-  digitalWrite(LEDPIN,LOW);  
   
-  //memset(ring,0,sizeof(int)*ringsize);
-  m190::formfeed(40);
+  m190::formfeed(30);
 
   generatePrivateKey(PRIVATE);
   
-  digitalWrite(LEDPIN,HIGH);  
-  
   qroffset=20;
   printprivate(PRIVATE);
-  m190::formfeed(40);
+  m190::formfeed(75);
   
   bitaddress::generatePublicKey(PRIVATE,pubx,puby);
-  
-  digitalWrite(LEDPIN,HIGH);  
   
   qroffset=5;
   printpublic(pubx,puby);
   m190::formfeed(20);
-
-  digitalWrite(LEDPIN,LOW);  
 }

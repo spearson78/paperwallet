@@ -7,70 +7,142 @@
 #include <panic.h>
 #include <progress.h>
 
-#define RNG_VERIFY
-#define ONE_BIT_SAMPLE //pcl3 and display prototype barelyfits in flash
+#define NIST_RNG_VERIFY
+#define NIST_RUN_RNG_VERIFY
+#define DEBIAS
+
+//#define DEBUG
+
+//#define RNGVALDEBUG
+
+#ifdef DEBUG
+void DBGPRINT(char *str);
+#endif
+
+byte getSampleImpl(){
+  int s = analogRead(0);
+  //Analog values have 10 bits of accuracy. Condense these 10 bits of noise into 1 bit
+  byte r = (s ^ s>>1 ^ s>>2  ^ s>>3 ^ s>>4 ^ s>>5 ^ s>>6 ^ s>>7 ^ s>>8 ^ s>>9)&0x01;
+  return r;
+}
 
 byte getSample(){
-  int a = analogRead(0);
-#ifdef ONE_BIT_SAMPLE
-  return a &0x01;
+#ifdef DEBIAS
+  //Von neumann debiasing
+  for(byte i=0;i<100;i++){
+    byte s1 =getSampleImpl();
+    byte s2 =getSampleImpl();
+
+#ifdef RNGVALDEBUG
+  char out[5];
+  itoa(s1,out,10);
+  DBGPRINT(out);
+  itoa(s2,out,10);
+  DBGPRINT(out);
+#endif    
+
+    //debias
+    if(s1 != s2){
+      return s1;
+    }
+  }
+  PANIC(PANIC_RNG_FAIL_DEBIAS);
 #else
-  return (a ^ (a>>1) ^ (a>>2) ^ (a>>3) ^ (a>>4) ^ (a>>5) ^ (a>>6) ^ (a>>7))&0x01;
+  return getSampleImpl();
 #endif
 }
 
 const int rounds = 50;
+const int n=8*rounds*32;
 
-void rng::generate(byte *data,int dataLen){
-#ifdef RNG_VERIFY
-  byte run=0;
-  byte last=0;
-  unsigned int runs[25];
-  memset(runs,0,sizeof(unsigned int)*25);
+bool generateimpl(byte data[32]){
+#ifdef NIST_RNG_VERIFY
+  byte last=0;  
+  int p=0;
+  int v=0;
 #endif
 
-  SHA256_CTX hash;
-  sha256_init(&hash);
-
-  for( int r = 0; r < rounds ; r++){
+  for( byte r = 0; r < rounds ; r++){
     PROGRESS((float)r/(float)rounds);
-    for( int i = 0; i < dataLen ; i++ ){
-      byte build =0;
+    for( byte i = 0; i < 32 ; i++ ){
       for(byte bit=0;bit<8;bit++){
         byte s = getSample();
-        build |= (s<<bit);
-#ifdef RNG_VERIFY
-        if(s==last){
-          run++;
-          if( run > 25 ){
-            PANIC(PANIC_RNG_RUN);
-          }
-        } else {
-          runs[run]++;
-          unsigned int limit = (5000 >> run)+5;
-          if( runs[run] >= limit ){
-            PANIC(PANIC_RNG_REGULAR);
-          }
-          run=0;
+        if(data!=NULL){
+          data[i] ^= (s<<bit);
+        }
+#ifdef NIST_RNG_VERIFY
+        if( s==1 ){
+          p++;
+        }
+        if(s!=last){
+          v++;
           last=s;
         }
 #endif
       }
-      sha256_update(&hash,&build,1);
     }
   }
-/*
-  for(int i=0;i<20;i++){
-    unsigned int limit = (5000 >> i)+5;
-    Serial.print("RUNS[");
-    Serial.print(i);
-    Serial.print("]=");
-    Serial.print(runs[i]);
-    Serial.print(" limit=");
-    Serial.print(limit);
-    
-    Serial.println();
+
+#ifdef NIST_RNG_VERIFY
+
+  float rootn = sqrt(n);
+  float roottwo = sqrt(2);
+
+  float freq = abs(n-(p<<1));
+
+  float sobs = freq/rootn;
+  float Pfreq = sobs/roottwo;
+
+  if(Pfreq>1.82139){
+#ifdef DEBUG
+    char out[5];
+    itoa(p,out,10);
+    DBGPRINT(out);
+
+    DBGPRINT("FAIL FREQ");
+#endif
+    return false;
+  } else {
+#ifdef NIST_RUN_RNG_VERIFY
+    float pi = (float)p/n;
+    float twonpi=2.0*n*pi;
+    float tworoottwonpi=2.0*sqrt(2.0*n)*pi;
+
+    float ompi = 1.0-pi;
+    float Prun = abs(((float)v-twonpi*(ompi)))/(tworoottwonpi*ompi);
+
+    if(Prun>1.82139){
+#ifdef DEBUG
+    DBGPRINT("FAIL RUN");
+#endif
+      return false;
+    }
+#endif
   }
-*/
-  sha256_final(&hash,data);
+#endif
+  return true;
+}
+
+void rng::generate(byte data[32]){
+
+  bool pass = generateimpl(data);
+#ifdef NIST_RNG_VERIFY
+
+  //If the value looks non random check 10 more times to ensure the random number generator is still functioning
+  if( !pass ){
+    byte failcount=0;
+    for(byte i=0;i<10;i++){      
+#ifdef DEBUG
+      DBGPRINT("CHECK RNG");
+#endif
+      if(!generateimpl(NULL)){
+        failcount++;
+        //10% chance of seeing a failure in 10 samples
+        if(failcount>2){
+          PANIC(PANIC_RNG_FAIL_NIST);
+        }
+      }
+    }
+  }
+#endif
 }

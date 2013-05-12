@@ -7,7 +7,7 @@
 #include <Arduino.h>
 
 namespace rng{
-  void generate(byte *data,int dataLen);
+  void generate(byte data[32]);
 }
 
 #endif

@@ -108,7 +108,7 @@ void displayResults(uint8_t *PRIVATE,const struct bigint &x,const struct bigint 
 }
 
 void generatePrivateKey(uint8_t *PRIVATE){
-  rng::generate(PRIVATE,32);
+  rng::generate(PRIVATE);
 }
 
 void displayQR(const char *string){
